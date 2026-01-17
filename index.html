@@ -13,7 +13,7 @@
             --card-back-bg: #dfe6e9;
             --text-color: #2d3436;
             --p1-color: #0984e3;
-            --p2-color: #e17055; /* Adjusted P2 to match theme better */
+            --p2-color: #e17055; 
         }
 
         body {
@@ -453,8 +453,8 @@
             let a, b, eq, res;
             
             if (skill === 'sq') {
-                 // Square numbers
-                 a = getRandomInt(2, 12);
+                 // UPDATED: Now includes 0 and 1 (Range 0-12) to ensure we have enough cards
+                 a = getRandomInt(0, 12);
                  b = a;
                  eq = `${a}&sup2;`; // Display as squared
                  res = a * b;
@@ -557,6 +557,10 @@
         }
 
         const deckData = generateDeckData().sort(() => 0.5 - Math.random());
+        
+        // UPDATE: Set win condition based on ACTUAL deck size generated
+        gameState.totalPairs = deckData.length / 2;
+
         const board = document.getElementById('board');
         board.innerHTML = '';
         deckData.forEach(data => board.appendChild(createCard(data)));
