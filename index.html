@@ -6,14 +6,14 @@
     <title>Nugget's Times Table Pairs</title>
     <style>
         :root {
-            /* Blue/Cyan Theme for Multiplication */
-            --primary-color: #0984e3; 
-            --secondary-color: #74b9ff;
-            --bg-color: #f0f3f5;
+            /* Theme Colors - Red/Orange for Times Tables */
+            --primary-color: #d63031; 
+            --secondary-color: #fab1a0;
+            --bg-color: #fff0f0;
             --card-back-bg: #dfe6e9;
             --text-color: #2d3436;
             --p1-color: #0984e3;
-            --p2-color: #d63031; /* Red for Player 2 */
+            --p2-color: #e17055; /* Adjusted P2 to match theme better */
         }
 
         body {
@@ -88,20 +88,24 @@
             text-align: center;
         }
 
-        .tables-grid {
+        /* Grid for selecting tables (2x - 12x) */
+        .skills-grid {
             display: grid;
-            grid-template-columns: repeat(5, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 10px;
             margin: 15px 0;
             width: 100%;
+            text-align: left;
         }
-        .tables-grid label {
+        .skills-grid label {
             display: flex; align-items: center; justify-content: center;
-            background: #eee; padding: 8px; border-radius: 5px; cursor: pointer;
+            background: #eee; padding: 12px; border-radius: 8px; cursor: pointer;
             font-weight: bold;
         }
-        .tables-grid input { margin-right: 5px; }
-        .tables-grid label:hover { background: #e0e0e0; }
+        .skills-grid input { margin-right: 10px; transform: scale(1.2); }
+        .skills-grid label:hover { background: #e0e0e0; }
+        
+        @media (max-width: 500px) { .skills-grid { grid-template-columns: repeat(2, 1fr); } }
 
         .mode-selection {
             display: flex; flex-direction: column; gap: 10px; width: 100%;
@@ -121,7 +125,7 @@
         .btn:hover { filter: brightness(90%); }
         .btn.secondary { background-color: #636e72; color: white; }
         .btn.outline { background: transparent; border: 2px solid var(--primary-color); color: var(--primary-color); }
-        .btn.outline:hover { background: #e6f3ff; }
+        .btn.outline:hover { background: #ffeaea; }
         .btn-small { padding: 5px 10px; font-size: 0.9rem; min-width: auto; }
         
         .btn-group-label { font-weight: bold; margin-top: 10px; display: block; font-size: 1.2rem; }
@@ -189,17 +193,21 @@
         .card-front { background-color: white; transform: rotateY(180deg); color: #2d3436; overflow: hidden; padding: 5px; box-sizing: border-box; }
         .open-mode .card-front { transform: rotateY(0deg); }
         .open-mode .card-back { display: none; }
-        .card.selected .card-front { border: 4px solid var(--primary-color); background-color: #e6f3ff; }
+        .card.selected .card-front { border: 4px solid var(--primary-color); background-color: #ffeaea; }
         .card-back { background-color: var(--secondary-color); transform: rotateY(0deg); }
         .card-back img { width: 80%; height: auto; opacity: 0.9; }
 
-        /* Updated Card Content CSS */
+        /* --- Card Content --- */
         .card-content { 
-            font-family: 'Segoe UI', 'Arial Narrow', sans-serif; /* Slimmer font */
-            font-size: 1.5rem; /* Slightly smaller to fit 12 x 12 */
+            font-family: 'Segoe UI', 'Arial Narrow', sans-serif;
+            font-size: 1.6rem; 
             font-weight: bold; 
             text-align: center; 
-            white-space: nowrap; /* Forces text to one line */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            line-height: 1.2;
         }
 
         /* --- Modal & Certificate --- */
@@ -231,6 +239,7 @@
         .cert-nugget-stamp { width: 100px; height: auto; transform: rotate(-10deg); opacity: 0.9; }
         .paw-print { color: var(--primary-color); font-size: 3rem; transform: rotate(-15deg); }
         .cert-meta { font-size: 0.9rem; color: #636e72; margin-top: 30px; border-top: 1px solid #dfe6e9; padding-top: 10px; }
+        .cert-skills-list { display: block; margin-top: 10px; font-weight: bold; color: var(--primary-color); font-size: 0.9em; }
 
         /* --- PRINT STYLES --- */
         #print-layout { display: none; }
@@ -274,22 +283,36 @@
     <div id="game-container">
         
         <div id="nugget-area" class="no-print">
-            <img src="Nugget.png" alt="Nugget" id="nugget-top-img" onerror="this.src='https://api.dicebear.com/7.x/thumbs/svg?seed=Nugget&backgroundColor=74b9ff'">
+            <img src="Nugget.png" alt="Nugget" id="nugget-top-img" onerror="this.src='https://api.dicebear.com/7.x/thumbs/svg?seed=Nugget&backgroundColor=fab1a0'">
             <div class="speech-bubble" id="nugget-speech">
-                Hi! Select your times tables to start.
+                Hi! Which tables do you want to practise?
             </div>
         </div>
 
         <div id="start-screen" class="no-print">
             
-            <div id="phase-tables" style="width:100%">
+            <div id="phase-skills" style="width:100%">
                 <span class="btn-group-label">Step 1: Select Tables</span>
-                <div style="margin-top:5px;">
-                    <button class="btn btn-small secondary" onclick="toggleAllTables(true)">Select All</button>
-                    <button class="btn btn-small secondary" onclick="toggleAllTables(false)">Clear</button>
+                <div style="margin-top:5px; margin-bottom: 10px;">
+                    <button class="btn btn-small secondary" onclick="toggleAllSkills(true)">Select All</button>
+                    <button class="btn btn-small secondary" onclick="toggleAllSkills(false)">Clear</button>
                 </div>
-                <div class="tables-grid" id="tables-container">
-                    </div>
+                
+                <div class="skills-grid" id="skills-container">
+                    <label><input type="checkbox" value="2" checked> 2×</label>
+                    <label><input type="checkbox" value="3" checked> 3×</label>
+                    <label><input type="checkbox" value="4" checked> 4×</label>
+                    <label><input type="checkbox" value="5" checked> 5×</label>
+                    <label><input type="checkbox" value="6" checked> 6×</label>
+                    <label><input type="checkbox" value="7" checked> 7×</label>
+                    <label><input type="checkbox" value="8" checked> 8×</label>
+                    <label><input type="checkbox" value="9" checked> 9×</label>
+                    <label><input type="checkbox" value="10" checked> 10×</label>
+                    <label><input type="checkbox" value="11" checked> 11×</label>
+                    <label><input type="checkbox" value="12" checked> 12×</label>
+                    <label><input type="checkbox" value="sq"> Squares</label>
+                </div>
+
                 <button class="btn" onclick="goToModeSelection()">Next</button>
             </div>
 
@@ -300,7 +323,7 @@
                 <button class="btn secondary" onclick="setupPhase('multi-memory')">Two Player (Shared Device)</button>
                 <div style="height: 10px;"></div>
                 <button class="btn outline" onclick="printCardSet()">Teacher: Print Card Set</button>
-                <button class="btn outline" onclick="backToTables()">Back</button>
+                <button class="btn outline" onclick="backToSkills()">Back</button>
             </div>
 
             <div id="phase-names" class="hidden">
@@ -360,11 +383,12 @@
                 <br><br>
                 <span id="cert-action-text">has successfully completed</span><br>
                 <strong>Nugget's Times Table Pairs</strong><br>
-                <span id="cert-details" style="font-size: 0.9em; font-style: italic;">(Multiplication Facts)</span>
+                <span id="cert-details" style="font-size: 0.9em; font-style: italic;">(Game Stats)</span><br>
+                <span class="cert-skills-list" id="cert-skills">Skills: </span>
             </div>
             
             <div class="cert-signature-area">
-                <img src="Nugget.png" alt="Nugget Stamp" class="cert-nugget-stamp">
+                <img src="Nugget.png" alt="Nugget Stamp" class="cert-nugget-stamp" onerror="this.style.display='none'">
                 <div>
                     <div class="paw-print">🐾</div>
                     <div style="font-family: cursive; margin-top: 5px;">Nugget Approved!</div>
@@ -403,39 +427,82 @@
 
     let selectedCards = [];
 
-    // --- Init Checkboxes ---
-    (function initTableCheckboxes() {
-        const container = document.getElementById('tables-container');
-        for (let i = 0; i <= 12; i++) {
-            const label = document.createElement('label');
-            label.innerHTML = `<input type="checkbox" value="${i}" checked> ${i}x`;
-            container.appendChild(label);
-        }
-    })();
-
-    function toggleAllTables(state) {
-        document.querySelectorAll('#tables-container input').forEach(cb => cb.checked = state);
+    // --- Helpers ---
+    function getRandomInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+    
+    function toggleAllSkills(state) {
+        document.querySelectorAll('#skills-container input').forEach(cb => cb.checked = state);
     }
 
-    function getSelectedTables() {
-        const checkboxes = document.querySelectorAll('#tables-container input:checked');
-        return Array.from(checkboxes).map(cb => parseInt(cb.value));
+    function getSelectedSkills() {
+        const checkboxes = document.querySelectorAll('#skills-container input:checked');
+        return Array.from(checkboxes).map(cb => cb.value);
+    }
+    
+    // --- Data Generators ---
+    function generateDeckData() {
+        const skills = getSelectedSkills();
+        let deck = [];
+        let usedEquations = new Set();
+        let safetyCounter = 0;
+        
+        while(deck.length < 24 && safetyCounter < 1000) {
+            safetyCounter++;
+            const skill = skills[getRandomInt(0, skills.length-1)];
+            
+            let a, b, eq, res;
+            
+            if (skill === 'sq') {
+                 // Square numbers
+                 a = getRandomInt(2, 12);
+                 b = a;
+                 eq = `${a}&sup2;`; // Display as squared
+                 res = a * b;
+            } else {
+                 // Standard Times Table
+                 a = parseInt(skill);
+                 b = getRandomInt(1, 12);
+                 // Randomise order (e.g. 7x6 or 6x7)
+                 if (Math.random() > 0.5) {
+                     eq = `${a} × ${b}`;
+                 } else {
+                     eq = `${b} × ${a}`;
+                 }
+                 res = a * b;
+            }
+
+            // Uniqueness check: avoid having 2x6 and 3x4 in same game as both = 12
+            // We check if the RESULT is already used to prevent ambiguity
+            if (!usedEquations.has(res)) {
+                usedEquations.add(res);
+                const id = (deck.length/2) + 1;
+                deck.push({ id: id, type: 'eq', val: eq, pairId: id });
+                deck.push({ id: id, type: 'res', val: res, pairId: id });
+            }
+        }
+        
+        return deck;
     }
 
     // --- Navigation Logic ---
     function goToModeSelection() {
-        const selected = getSelectedTables();
+        const selected = getSelectedSkills();
         if (selected.length === 0) {
             alert("Please select at least one times table!");
             return;
         }
-        document.getElementById('phase-tables').classList.add('hidden');
+        
+        document.getElementById('nugget-speech').innerText = "How would you like to play?";
+        
+        document.getElementById('phase-skills').classList.add('hidden');
         document.getElementById('phase-mode').classList.remove('hidden');
     }
 
-    function backToTables() {
+    function backToSkills() {
+        document.getElementById('nugget-speech').innerText = "Hi! Which tables do you want to practise?";
+        
         document.getElementById('phase-mode').classList.add('hidden');
-        document.getElementById('phase-tables').classList.remove('hidden');
+        document.getElementById('phase-skills').classList.remove('hidden');
     }
 
     function setupPhase(mode) {
@@ -460,54 +527,8 @@
         document.getElementById('phase-mode').classList.remove('hidden');
     }
 
-
-    // --- Content Generation ---
-    function generateDeckData() {
-        const tables = getSelectedTables();
-        let deck = [];
-        let usedResults = new Set();
-        let candidates = [];
-
-        // Generate extensive pool from selected tables
-        tables.forEach(a => {
-            for(let b=0; b<=12; b++) {
-                candidates.push({ eq: `${a} × ${b}`, res: a*b });
-            }
-        });
-
-        // Shuffle candidates
-        candidates.sort(() => 0.5 - Math.random());
-
-        // Select 12 that have unique results
-        for(let item of candidates) {
-            if (deck.length >= 24) break; // 12 pairs = 24 cards
-            if (!usedResults.has(item.res)) {
-                usedResults.add(item.res);
-                const id = (deck.length/2) + 1;
-                // Add Pair
-                deck.push({ id: id, type: 'eq', val: item.eq, pairId: id });
-                deck.push({ id: id, type: 'res', val: item.res, pairId: id });
-            }
-        }
-        
-        // Safety: If fewer than 24 cards (rare with standard selections, possible if user picks only 0x)
-        while (deck.length < 24 && deck.length > 0) {
-             // Pick a random pair from what we have
-             const randIndex = Math.floor(Math.random() * (deck.length / 2)); 
-             const eqCard = deck[randIndex*2];
-             const resCard = deck[randIndex*2 + 1];
-             
-             // Create new pair with new ID but same values
-             const newId = (deck.length/2) + 1;
-             deck.push({ id: newId, type: 'eq', val: eqCard.val, pairId: newId });
-             deck.push({ id: newId, type: 'res', val: resCard.val, pairId: newId });
-        }
-        
-        return deck;
-    }
-
+    // --- Game Engine ---
     function startGame() {
-        // Init State
         gameState.p1Name = document.getElementById('input-p1-name').value.trim() || "Player 1";
         gameState.p2Name = document.getElementById('input-p2-name').value.trim() || "Player 2";
         gameState.scores = { p1: 0, p2: 0 };
@@ -518,7 +539,6 @@
         gameState.isProcessing = false;
         gameState.startTime = new Date();
 
-        // UI Prep
         document.getElementById('start-screen').classList.add('hidden');
         document.getElementById('game-controls').classList.remove('hidden');
         document.getElementById('board').classList.remove('hidden');
@@ -530,16 +550,13 @@
             updateTurnIndicator();
         } else if (gameState.mode === 'solo-memory') {
             document.getElementById('stats-bar').classList.remove('hidden');
-            document.getElementById('nugget-speech').innerText = "Find the matching Equation and Answer!";
+            document.getElementById('nugget-speech').innerText = "Find the matching pairs!";
         } else {
-            // Solo Open: No stats bar visible during game
             document.getElementById('board').classList.add('open-mode');
             document.getElementById('nugget-speech').innerText = "Match them up as fast as you can!";
         }
 
-        // Generate Board
         const deckData = generateDeckData().sort(() => 0.5 - Math.random());
-        
         const board = document.getElementById('board');
         board.innerHTML = '';
         deckData.forEach(data => board.appendChild(createCard(data)));
@@ -570,7 +587,7 @@
         front.innerHTML = `<div class="card-content">${data.val}</div>`;
         
         const back = document.createElement('div'); back.className = 'card-face card-back';
-        back.innerHTML = `<img src="Nugget.png" onerror="this.src='https://api.dicebear.com/7.x/thumbs/svg?seed=Nugget&backgroundColor=74b9ff'">`;
+        back.innerHTML = `<img src="Nugget.png" onerror="this.src='https://api.dicebear.com/7.x/thumbs/svg?seed=Nugget&backgroundColor=fab1a0'">`;
         
         card.appendChild(front); 
         card.appendChild(back);
@@ -580,9 +597,21 @@
     }
 
     function handleCardClick(card) {
-        if (gameState.isProcessing || card.classList.contains('matched') || card.classList.contains('flipped')) return;
+        if (gameState.isProcessing || card.classList.contains('matched')) return;
 
-        // 1. Flip Logic
+        // FIX: Handle Open Mode Deselection
+        if (gameState.mode === 'solo-open') {
+            if (card.classList.contains('selected')) {
+                card.classList.remove('selected');
+                selectedCards = [];
+                return;
+            }
+        } else {
+            // Memory mode check
+            if (card.classList.contains('flipped')) return;
+        }
+
+        // Apply visual state
         if (gameState.mode !== 'solo-open') {
             card.classList.add('flipped');
         } else {
@@ -591,7 +620,6 @@
         
         selectedCards.push(card);
 
-        // 2. Check Match Logic
         if (selectedCards.length === 2) {
             gameState.isProcessing = true;
             gameState.attempts++;
@@ -623,7 +651,6 @@
             selectedCards = [];
             gameState.isProcessing = false;
 
-            // Scoring
             if (gameState.mode === 'multi-memory') {
                 gameState.scores[gameState.currentPlayer]++;
                 document.getElementById('nugget-speech').innerText = "Match! Go again!";
@@ -632,7 +659,6 @@
                  document.getElementById('nugget-speech').innerText = "Good job!";
             }
 
-            // Game Over Check
             if (gameState.matchesFound === gameState.totalPairs) {
                 endGame();
             }
@@ -656,7 +682,6 @@
             
             selectedCards = [];
             
-            // Turn Switching for Multiplayer
             if (gameState.mode === 'multi-memory') {
                 setTimeout(() => {
                     gameState.currentPlayer = (gameState.currentPlayer === 'p1') ? 'p2' : 'p1';
@@ -694,7 +719,6 @@
         let actionText = "has successfully completed";
         let detailText = "";
         
-        // 1. Determine Player and Action
         if (gameState.mode === 'multi-memory') {
             actionText = "won the game of";
             if (gameState.scores.p2 > gameState.scores.p1) name = gameState.p2Name;
@@ -704,7 +728,6 @@
             }
         } 
         
-        // 2. Determine Stats
         if (gameState.mode === 'solo-open') {
             const diff = Math.floor((gameState.endTime - gameState.startTime) / 1000);
             const m = Math.floor(diff / 60);
@@ -714,24 +737,14 @@
             detailText = `Total Attempts: ${gameState.attempts}`;
         }
         
-        // 3. Determine Tables Used
-        const tables = getSelectedTables().sort((a,b) => a-b);
-        let tablesText = "";
-        if (tables.length === 13) {
-            tablesText = "All Times Tables (0-12)";
-        } else {
-            tablesText = "Times Tables: " + tables.join(", ");
-        }
-
         document.getElementById('final-cert-name').innerText = name;
         document.getElementById('cert-action-text').innerText = actionText;
-        
-        // Combine Tables info with Stats info
-        let finalDetails = tablesText;
-        if (detailText) finalDetails += `\n${detailText}`;
-        
-        document.getElementById('cert-details').innerText = finalDetails;
+        document.getElementById('cert-details').innerText = detailText;
         document.getElementById('cert-date').innerText = new Date().toLocaleDateString();
+
+        // Populate skills list
+        const skillsList = getSelectedSkills().map(s => (s === 'sq' ? 'Squares' : `${s}× Table`)).join(', ');
+        document.getElementById('cert-skills').innerText = `Tables: ${skillsList}`;
         
         document.getElementById('modal-overlay').classList.add('hidden');
         document.getElementById('game-controls').classList.add('hidden');
@@ -743,15 +756,15 @@
 
     // --- Teacher Printing ---
     function printCardSet() {
-        const selectedTables = getSelectedTables();
-        if(selectedTables.length === 0) { alert("Select at least one table."); return; }
+        const selectedSkills = getSelectedSkills();
+        if(selectedSkills.length === 0) { alert("Select at least one table."); return; }
 
         const container = document.getElementById('print-layout');
         container.innerHTML = '';
         
         const data = generateDeckData().sort(() => 0.5 - Math.random());
         
-        // PAGE 1: All Fronts (24 cards)
+        // PAGE 1: All Fronts
         const p1 = document.createElement('div'); p1.className = 'print-page';
         data.forEach(cardData => {
             const wrap = document.createElement('div'); wrap.className = 'print-card';
@@ -761,7 +774,7 @@
             p1.appendChild(wrap);
         });
         
-        // PAGE 2: All Backs (24 cards)
+        // PAGE 2: All Backs
         const p2 = document.createElement('div'); p2.className = 'print-page';
         data.forEach(cardData => {
              const wrap = document.createElement('div'); wrap.className = 'print-card';
@@ -778,7 +791,6 @@
         window.print();
         setTimeout(() => container.classList.remove('visible-print'), 1000);
     }
-
 </script>
 </body>
 </html>
