@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nugget's Times Table Pairs</title>
+    <style>
+        :root {
+            /* Blue/Cyan Theme for Multiplication */
+            --primary-color: #0984e3; 
+            --secondary-color: #74b9ff;
+            --bg-color: #f0f3f5;
+            --card-back-bg: #dfe6e9;
+            --text-color: #2d3436;
+            --p1-color: #0984e3;
+            --p2-color: #d63031; /* Red for Player 2 */
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            color: var(--text-color);
+        }
+
+        /* --- Layout --- */
+        header, #nugget-area, #start-screen, #game-controls, #cert-buttons-container {
+            box-sizing: border-box;
+        }
+
+        header { text-align: center; padding: 20px; }
+
+        #game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 95%;
+            max-width: 1200px;
+            position: relative;
+            padding-bottom: 50px;
+        }
+
+        /* --- Nugget Area --- */
+        #nugget-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        #nugget-top-img {
+            width: 150px;
+            height: auto;
+            transition: transform 0.3s ease;
+        }
+        #nugget-top-img:hover { transform: scale(1.05) rotate(5deg); }
+
+        .speech-bubble {
+            background: white;
+            border-radius: 20px;
+            padding: 15px 25px;
+            margin-left: 20px;
+            position: relative;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            max-width: 400px;
+            font-size: 1.1em;
+            border: 2px solid var(--primary-color);
+        }
+        .speech-bubble:after {
+            content: ''; position: absolute; left: 0; top: 50%; width: 0; height: 0;
+            border: 15px solid transparent; border-right-color: var(--primary-color);
+            border-left: 0; margin-top: -15px; margin-left: -15px;
+        }
+
+        /* --- Start Screen & Settings --- */
+        #start-screen {
+            display: flex; flex-direction: column; align-items: center; gap: 15px;
+            background: white; padding: 30px; border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .tables-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+            width: 100%;
+        }
+        .tables-grid label {
+            display: flex; align-items: center; justify-content: center;
+            background: #eee; padding: 8px; border-radius: 5px; cursor: pointer;
+            font-weight: bold;
+        }
+        .tables-grid input { margin-right: 5px; }
+        .tables-grid label:hover { background: #e0e0e0; }
+
+        .mode-selection {
+            display: flex; flex-direction: column; gap: 10px; width: 100%;
+        }
+
+        .input-group {
+            display: flex; flex-direction: column; gap: 5px; text-align: left; width: 80%; margin: 10px auto;
+        }
+        .input-group label { font-weight: bold; font-size: 0.9rem; }
+        .input-group input { padding: 10px; font-size: 1rem; border: 2px solid #ccc; border-radius: 5px; }
+
+        .btn {
+            background-color: var(--primary-color); color: white; border: none;
+            padding: 12px 25px; margin: 5px; border-radius: 8px; font-size: 1.1rem;
+            cursor: pointer; transition: background 0.2s; min-width: 200px;
+        }
+        .btn:hover { filter: brightness(90%); }
+        .btn.secondary { background-color: #636e72; color: white; }
+        .btn.outline { background: transparent; border: 2px solid var(--primary-color); color: var(--primary-color); }
+        .btn.outline:hover { background: #e6f3ff; }
+        .btn-small { padding: 5px 10px; font-size: 0.9rem; min-width: auto; }
+        
+        .btn-group-label { font-weight: bold; margin-top: 10px; display: block; font-size: 1.2rem; }
+
+        .hidden { display: none !important; }
+
+        /* --- In-Game Controls --- */
+        #game-controls {
+            display: flex; flex-direction: column; align-items: center;
+            margin-bottom: 20px; gap: 15px; width: 100%;
+        }
+        
+        /* Scoreboard for 2 Player */
+        #scoreboard {
+            display: flex; gap: 20px;
+            background: white; padding: 10px 20px; border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .score-box {
+            padding: 10px 20px; border-radius: 10px; text-align: center; min-width: 100px;
+            border: 2px solid transparent; transition: all 0.3s;
+        }
+        .score-box.active { transform: scale(1.05); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .p1-box { color: var(--p1-color); }
+        .p1-box.active { background-color: var(--p1-color); color: white; border-color: var(--p1-color); }
+        .p2-box { color: var(--p2-color); }
+        .p2-box.active { background-color: var(--p2-color); color: white; border-color: var(--p2-color); }
+        
+        .score-val { font-size: 2rem; font-weight: bold; display: block; }
+        .score-name { font-size: 0.9rem; font-weight: bold; text-transform: uppercase; }
+
+        /* Single Player Stats */
+        #stats-bar {
+            background: var(--primary-color); color: white; padding: 10px 20px;
+            border-radius: 20px; font-weight: bold; font-size: 1.2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* --- Game Board --- */
+        #board {
+            display: grid; 
+            /* 6 columns x 4 rows = 24 cards */
+            grid-template-columns: repeat(6, 1fr); 
+            gap: 12px;
+            perspective: 1000px; margin-bottom: 40px;
+            max-width: 1000px;
+        }
+        @media (max-width: 900px) { #board { grid-template-columns: repeat(4, 1fr); } } /* 4x6 */
+        @media (max-width: 500px) { #board { grid-template-columns: repeat(3, 1fr); } } /* 3x8 */
+
+        .card {
+            background-color: transparent; width: 120px; height: 120px; 
+            cursor: pointer; position: relative; transform-style: preserve-3d;
+            transition: transform 0.6s;
+        }
+        .card.flipped { transform: rotateY(180deg); }
+        .card.matched { visibility: hidden; opacity: 0; transition: visibility 0s 0.5s, opacity 0.5s linear; cursor: default; }
+
+        .card-face {
+            position: absolute; width: 100%; height: 100%;
+            -webkit-backface-visibility: hidden; backface-visibility: hidden;
+            border-radius: 10px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); border: 2px solid #ddd;
+        }
+        .card-front { background-color: white; transform: rotateY(180deg); color: #2d3436; overflow: hidden; padding: 5px; box-sizing: border-box; }
+        .open-mode .card-front { transform: rotateY(0deg); }
+        .open-mode .card-back { display: none; }
+        .card.selected .card-front { border: 4px solid var(--primary-color); background-color: #e6f3ff; }
+        .card-back { background-color: var(--secondary-color); transform: rotateY(0deg); }
+        .card-back img { width: 80%; height: auto; opacity: 0.9; }
+
+        /* Updated Card Content CSS */
+        .card-content { 
+            font-family: 'Segoe UI', 'Arial Narrow', sans-serif; /* Slimmer font */
+            font-size: 1.5rem; /* Slightly smaller to fit 12 x 12 */
+            font-weight: bold; 
+            text-align: center; 
+            white-space: nowrap; /* Forces text to one line */
+        }
+
+        /* --- Modal & Certificate --- */
+        #modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 2000;
+        }
+        .modal-content {
+            background: white; padding: 30px; border-radius: 15px; text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2); max-width: 400px; width: 90%;
+            border: 4px solid var(--primary-color);
+        }
+        
+        #certificate-view {
+            text-align: center; background: white; padding: 40px;
+            border: 10px double var(--primary-color); border-radius: 15px;
+            max-width: 700px; width: 100%; box-sizing: border-box;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin: auto;
+        }
+        .cert-title { font-family: 'Times New Roman', serif; font-size: 3rem; color: var(--primary-color); margin-bottom: 10px; }
+        .cert-body { font-size: 1.3rem; margin: 30px 0; line-height: 1.6; }
+        .cert-name-display {
+            font-family: 'Brush Script MT', cursive; font-size: 3rem; color: #2d3436;
+            border-bottom: 2px solid #2d3436; padding: 0 20px; display: inline-block; margin-bottom: 10px;
+        }
+        .cert-signature-area {
+            display: flex; align-items: center; justify-content: center; gap: 30px; margin-top: 40px;
+        }
+        .cert-nugget-stamp { width: 100px; height: auto; transform: rotate(-10deg); opacity: 0.9; }
+        .paw-print { color: var(--primary-color); font-size: 3rem; transform: rotate(-15deg); }
+        .cert-meta { font-size: 0.9rem; color: #636e72; margin-top: 30px; border-top: 1px solid #dfe6e9; padding-top: 10px; }
+
+        /* --- PRINT STYLES --- */
+        #print-layout { display: none; }
+
+        @media print {
+            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+            html, body { margin: 0; padding: 0; width: 100%; background: white; }
+            header, #nugget-area, #start-screen, #game-controls, #board, #modal-overlay, #cert-buttons-container { display: none !important; }
+            #game-container { display: block; width: 100%; max-width: none; margin: 0; }
+            
+            #certificate-view:not(.hidden) {
+                display: block !important; position: absolute; left: 0; top: 0; width: 100%;
+                border: 5px solid var(--primary-color);
+            }
+
+            #print-layout.visible-print {
+                display: block !important; position: absolute; top: 0; left: 0; width: 100%;
+            }
+            .print-page {
+                display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(6, 1fr);
+                gap: 10px; width: 100%; height: 98vh; page-break-after: always; padding: 20px; box-sizing: border-box;
+            }
+            .print-card {
+                display: flex; align-items: center; justify-content: center;
+                height: 100%; width: 100%; border: 1px dashed #ccc;
+            }
+            .print-card .card-face {
+                position: relative; transform: none; box-shadow: none;
+                border: 2px solid #333; width: 90%; height: 90%;
+            }
+            .print-card .card-back { background-color: var(--secondary-color) !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <header class="no-print">
+        <h1>Nugget's Times Table Pairs</h1>
+    </header>
+
+    <div id="game-container">
+        
+        <div id="nugget-area" class="no-print">
+            <img src="Nugget.png" alt="Nugget" id="nugget-top-img" onerror="this.src='https://api.dicebear.com/7.x/thumbs/svg?seed=Nugget&backgroundColor=74b9ff'">
+            <div class="speech-bubble" id="nugget-speech">
+                Hi! Select your times tables to start.
+            </div>
+        </div>
+
+        <div id="start-screen" class="no-print">
+            
+            <div id="phase-tables" style="width:100%">
+                <span class="btn-group-label">Step 1: Select Tables</span>
+                <div style="margin-top:5px;">
+                    <button class="btn btn-small secondary" onclick="toggleAllTables(true)">Select All</button>
+                    <button class="btn btn-small secondary" onclick="toggleAllTables(false)">Clear</button>
+                </div>
+                <div class="tables-grid" id="tables-container">
+                    </div>
+                <button class="btn" onclick="goToModeSelection()">Next</button>
+            </div>
+
+            <div id="phase-mode" class="mode-selection hidden">
+                <span class="btn-group-label">Step 2: Choose Game Mode</span>
+                <button class="btn" onclick="setupPhase('solo-open')">Single Player (Face Up)</button>
+                <button class="btn" onclick="setupPhase('solo-memory')">Single Player (Memory)</button>
+                <button class="btn secondary" onclick="setupPhase('multi-memory')">Two Player (Shared Device)</button>
+                <div style="height: 10px;"></div>
+                <button class="btn outline" onclick="printCardSet()">Teacher: Print Card Set</button>
+                <button class="btn outline" onclick="backToTables()">Back</button>
+            </div>
+
+            <div id="phase-names" class="hidden">
+                <span class="btn-group-label" id="name-prompt-text">Enter Name</span>
+                
+                <div id="p1-input" class="input-group">
+                    <label>Player 1 Name:</label>
+                    <input type="text" id="input-p1-name" placeholder="Player 1" maxlength="15">
+                </div>
+
+                <div id="p2-input" class="input-group hidden">
+                    <label>Player 2 Name:</label>
+                    <input type="text" id="input-p2-name" placeholder="Player 2" maxlength="15">
+                </div>
+
+                <br>
+                <button class="btn" onclick="startGame()">Start Game</button>
+                <button class="btn outline" onclick="backToModes()">Back</button>
+            </div>
+
+        </div>
+
+        <div id="game-controls" class="hidden no-print">
+            
+            <div id="stats-bar" class="hidden">
+                <span id="stats-text">Attempts: 0</span>
+            </div>
+
+            <div id="scoreboard" class="hidden">
+                <div id="p1-score-box" class="score-box p1-box active">
+                    <span class="score-name" id="disp-p1-name">P1</span>
+                    <span class="score-val" id="score-p1">0</span>
+                </div>
+                <div id="p2-score-box" class="score-box p2-box">
+                    <span class="score-name" id="disp-p2-name">P2</span>
+                    <span class="score-val" id="score-p2">0</span>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="board" class="hidden no-print"></div>
+
+        <div id="modal-overlay" class="hidden no-print">
+            <div class="modal-content">
+                <h2>Well Done!</h2>
+                <p id="winner-text">You matched all the pairs!</p>
+                <button class="btn" onclick="claimCertificate()">View Certificate</button>
+            </div>
+        </div>
+
+        <div id="certificate-view" class="hidden">
+            <div class="cert-title">Certificate of Achievement</div>
+            <div class="cert-body">
+                This certifies that<br><br>
+                <div class="cert-name-display" id="final-cert-name">Student Name</div>
+                <br><br>
+                <span id="cert-action-text">has successfully completed</span><br>
+                <strong>Nugget's Times Table Pairs</strong><br>
+                <span id="cert-details" style="font-size: 0.9em; font-style: italic;">(Multiplication Facts)</span>
+            </div>
+            
+            <div class="cert-signature-area">
+                <img src="Nugget.png" alt="Nugget Stamp" class="cert-nugget-stamp">
+                <div>
+                    <div class="paw-print">🐾</div>
+                    <div style="font-family: cursive; margin-top: 5px;">Nugget Approved!</div>
+                </div>
+            </div>
+
+            <div class="cert-meta">
+                Date: <span id="cert-date"></span>
+            </div>
+        </div>
+
+        <div id="cert-buttons-container" class="hidden no-print" style="display:flex; gap:10px; margin-top:20px;">
+            <button class="btn" onclick="location.reload()">Play Again</button>
+            <button class="btn secondary" onclick="window.print()">Print Certificate</button>
+        </div>
+
+    </div>
+
+    <div id="print-layout"></div>
+
+<script>
+    // --- Global State ---
+    let gameState = {
+        mode: null,
+        p1Name: "Player 1",
+        p2Name: "Player 2",
+        scores: { p1: 0, p2: 0 },
+        currentPlayer: 'p1',
+        attempts: 0,
+        matchesFound: 0,
+        isProcessing: false,
+        totalPairs: 12,
+        startTime: null,
+        endTime: null
+    };
+
+    let selectedCards = [];
+
+    // --- Init Checkboxes ---
+    (function initTableCheckboxes() {
+        const container = document.getElementById('tables-container');
+        for (let i = 0; i <= 12; i++) {
+            const label = document.createElement('label');
+            label.innerHTML = `<input type="checkbox" value="${i}" checked> ${i}x`;
+            container.appendChild(label);
+        }
+    })();
+
+    function toggleAllTables(state) {
+        document.querySelectorAll('#tables-container input').forEach(cb => cb.checked = state);
+    }
+
+    function getSelectedTables() {
+        const checkboxes = document.querySelectorAll('#tables-container input:checked');
+        return Array.from(checkboxes).map(cb => parseInt(cb.value));
+    }
+
+    // --- Navigation Logic ---
+    function goToModeSelection() {
+        const selected = getSelectedTables();
+        if (selected.length === 0) {
+            alert("Please select at least one times table!");
+            return;
+        }
+        document.getElementById('phase-tables').classList.add('hidden');
+        document.getElementById('phase-mode').classList.remove('hidden');
+    }
+
+    function backToTables() {
+        document.getElementById('phase-mode').classList.add('hidden');
+        document.getElementById('phase-tables').classList.remove('hidden');
+    }
+
+    function setupPhase(mode) {
+        gameState.mode = mode;
+        document.getElementById('phase-mode').classList.add('hidden');
+        document.getElementById('phase-names').classList.remove('hidden');
+
+        if (mode === 'multi-memory') {
+            document.getElementById('name-prompt-text').innerText = "Enter Player Names";
+            document.getElementById('p2-input').classList.remove('hidden');
+            document.getElementById('input-p1-name').placeholder = "Player 1";
+            document.getElementById('input-p2-name').placeholder = "Player 2";
+        } else {
+            document.getElementById('name-prompt-text').innerText = "Enter Name";
+            document.getElementById('p2-input').classList.add('hidden');
+            document.getElementById('input-p1-name').placeholder = "Player 1";
+        }
+    }
+
+    function backToModes() {
+        document.getElementById('phase-names').classList.add('hidden');
+        document.getElementById('phase-mode').classList.remove('hidden');
+    }
+
+
+    // --- Content Generation ---
+    function generateDeckData() {
+        const tables = getSelectedTables();
+        let deck = [];
+        let usedResults = new Set();
+        let candidates = [];
+
+        // Generate extensive pool from selected tables
+        tables.forEach(a => {
+            for(let b=0; b<=12; b++) {
+                candidates.push({ eq: `${a} × ${b}`, res: a*b });
+            }
+        });
+
+        // Shuffle candidates
+        candidates.sort(() => 0.5 - Math.random());
+
+        // Select 12 that have unique results
+        for(let item of candidates) {
+            if (deck.length >= 24) break; // 12 pairs = 24 cards
+            if (!usedResults.has(item.res)) {
+                usedResults.add(item.res);
+                const id = (deck.length/2) + 1;
+                // Add Pair
+                deck.push({ id: id, type: 'eq', val: item.eq, pairId: id });
+                deck.push({ id: id, type: 'res', val: item.res, pairId: id });
+            }
+        }
+        
+        // Safety: If fewer than 24 cards (rare with standard selections, possible if user picks only 0x)
+        while (deck.length < 24 && deck.length > 0) {
+             // Pick a random pair from what we have
+             const randIndex = Math.floor(Math.random() * (deck.length / 2)); 
+             const eqCard = deck[randIndex*2];
+             const resCard = deck[randIndex*2 + 1];
+             
+             // Create new pair with new ID but same values
+             const newId = (deck.length/2) + 1;
+             deck.push({ id: newId, type: 'eq', val: eqCard.val, pairId: newId });
+             deck.push({ id: newId, type: 'res', val: resCard.val, pairId: newId });
+        }
+        
+        return deck;
+    }
+
+    function startGame() {
+        // Init State
+        gameState.p1Name = document.getElementById('input-p1-name').value.trim() || "Player 1";
+        gameState.p2Name = document.getElementById('input-p2-name').value.trim() || "Player 2";
+        gameState.scores = { p1: 0, p2: 0 };
+        gameState.currentPlayer = 'p1';
+        gameState.attempts = 0;
+        gameState.matchesFound = 0;
+        selectedCards = [];
+        gameState.isProcessing = false;
+        gameState.startTime = new Date();
+
+        // UI Prep
+        document.getElementById('start-screen').classList.add('hidden');
+        document.getElementById('game-controls').classList.remove('hidden');
+        document.getElementById('board').classList.remove('hidden');
+
+        if (gameState.mode === 'multi-memory') {
+            document.getElementById('scoreboard').classList.remove('hidden');
+            document.getElementById('disp-p1-name').innerText = gameState.p1Name;
+            document.getElementById('disp-p2-name').innerText = gameState.p2Name;
+            updateTurnIndicator();
+        } else if (gameState.mode === 'solo-memory') {
+            document.getElementById('stats-bar').classList.remove('hidden');
+            document.getElementById('nugget-speech').innerText = "Find the matching Equation and Answer!";
+        } else {
+            // Solo Open: No stats bar visible during game
+            document.getElementById('board').classList.add('open-mode');
+            document.getElementById('nugget-speech').innerText = "Match them up as fast as you can!";
+        }
+
+        // Generate Board
+        const deckData = generateDeckData().sort(() => 0.5 - Math.random());
+        
+        const board = document.getElementById('board');
+        board.innerHTML = '';
+        deckData.forEach(data => board.appendChild(createCard(data)));
+    }
+
+    function updateTurnIndicator() {
+        document.getElementById('score-p1').innerText = gameState.scores.p1;
+        document.getElementById('score-p2').innerText = gameState.scores.p2;
+        
+        const p1Box = document.getElementById('p1-score-box');
+        const p2Box = document.getElementById('p2-score-box');
+        
+        if (gameState.currentPlayer === 'p1') {
+            p1Box.classList.add('active'); p2Box.classList.remove('active');
+            document.getElementById('nugget-speech').innerText = `${gameState.p1Name}'s Turn`;
+        } else {
+            p1Box.classList.remove('active'); p2Box.classList.add('active');
+            document.getElementById('nugget-speech').innerText = `${gameState.p2Name}'s Turn`;
+        }
+    }
+
+    function createCard(data) {
+        const card = document.createElement('div'); 
+        card.className = 'card'; 
+        card.dataset.pairId = data.pairId;
+
+        const front = document.createElement('div'); front.className = 'card-face card-front';
+        front.innerHTML = `<div class="card-content">${data.val}</div>`;
+        
+        const back = document.createElement('div'); back.className = 'card-face card-back';
+        back.innerHTML = `<img src="Nugget.png" onerror="this.src='https://api.dicebear.com/7.x/thumbs/svg?seed=Nugget&backgroundColor=74b9ff'">`;
+        
+        card.appendChild(front); 
+        card.appendChild(back);
+        
+        card.addEventListener('click', () => handleCardClick(card));
+        return card;
+    }
+
+    function handleCardClick(card) {
+        if (gameState.isProcessing || card.classList.contains('matched') || card.classList.contains('flipped')) return;
+
+        // 1. Flip Logic
+        if (gameState.mode !== 'solo-open') {
+            card.classList.add('flipped');
+        } else {
+            card.classList.add('selected'); 
+        }
+        
+        selectedCards.push(card);
+
+        // 2. Check Match Logic
+        if (selectedCards.length === 2) {
+            gameState.isProcessing = true;
+            gameState.attempts++;
+            if (gameState.mode === 'solo-memory') updateStats();
+
+            const [c1, c2] = selectedCards;
+            const match = c1.dataset.pairId === c2.dataset.pairId;
+
+            if (match) {
+                handleMatch(c1, c2);
+            } else {
+                handleMiss(c1, c2);
+            }
+        }
+    }
+
+    function updateStats() {
+        document.getElementById('stats-text').innerText = `Attempts: ${gameState.attempts}`;
+    }
+
+    function handleMatch(c1, c2) {
+        setTimeout(() => {
+            c1.classList.add('matched');
+            c2.classList.add('matched');
+            c1.classList.remove('selected'); 
+            c2.classList.remove('selected');
+            
+            gameState.matchesFound++;
+            selectedCards = [];
+            gameState.isProcessing = false;
+
+            // Scoring
+            if (gameState.mode === 'multi-memory') {
+                gameState.scores[gameState.currentPlayer]++;
+                document.getElementById('nugget-speech').innerText = "Match! Go again!";
+                updateTurnIndicator(); 
+            } else {
+                 document.getElementById('nugget-speech').innerText = "Good job!";
+            }
+
+            // Game Over Check
+            if (gameState.matchesFound === gameState.totalPairs) {
+                endGame();
+            }
+
+        }, 500);
+    }
+
+    function handleMiss(c1, c2) {
+        setTimeout(() => {
+            if (gameState.mode === 'solo-open') {
+                c1.classList.remove('selected');
+                c2.classList.remove('selected');
+                document.getElementById('nugget-speech').innerText = "Try again.";
+            } else {
+                c1.classList.add('shaking'); c2.classList.add('shaking');
+                setTimeout(() => {
+                   c1.classList.remove('flipped', 'shaking');
+                   c2.classList.remove('flipped', 'shaking');
+                }, 500);
+            }
+            
+            selectedCards = [];
+            
+            // Turn Switching for Multiplayer
+            if (gameState.mode === 'multi-memory') {
+                setTimeout(() => {
+                    gameState.currentPlayer = (gameState.currentPlayer === 'p1') ? 'p2' : 'p1';
+                    updateTurnIndicator();
+                    gameState.isProcessing = false;
+                }, 600);
+            } else {
+                gameState.isProcessing = false;
+            }
+        }, 1000);
+    }
+
+    function endGame() {
+        gameState.endTime = new Date();
+        const modal = document.getElementById('modal-overlay');
+        const txt = document.getElementById('winner-text');
+        
+        if (gameState.mode === 'multi-memory') {
+            if (gameState.scores.p1 > gameState.scores.p2) {
+                txt.innerText = `${gameState.p1Name} Wins!`;
+            } else if (gameState.scores.p2 > gameState.scores.p1) {
+                txt.innerText = `${gameState.p2Name} Wins!`;
+            } else {
+                txt.innerText = "It's a Tie!";
+            }
+        } else {
+            txt.innerText = "All pairs found!";
+        }
+        
+        modal.classList.remove('hidden');
+    }
+
+    function claimCertificate() {
+        let name = gameState.p1Name;
+        let actionText = "has successfully completed";
+        let detailText = "";
+        
+        // 1. Determine Player and Action
+        if (gameState.mode === 'multi-memory') {
+            actionText = "won the game of";
+            if (gameState.scores.p2 > gameState.scores.p1) name = gameState.p2Name;
+            if (gameState.scores.p1 === gameState.scores.p2) {
+                name = `${gameState.p1Name} & ${gameState.p2Name}`;
+                actionText = "tied the game of";
+            }
+        } 
+        
+        // 2. Determine Stats
+        if (gameState.mode === 'solo-open') {
+            const diff = Math.floor((gameState.endTime - gameState.startTime) / 1000);
+            const m = Math.floor(diff / 60);
+            const s = diff % 60;
+            detailText = `Time Taken: ${m}m ${s}s`;
+        } else if (gameState.mode === 'solo-memory') {
+            detailText = `Total Attempts: ${gameState.attempts}`;
+        }
+        
+        // 3. Determine Tables Used
+        const tables = getSelectedTables().sort((a,b) => a-b);
+        let tablesText = "";
+        if (tables.length === 13) {
+            tablesText = "All Times Tables (0-12)";
+        } else {
+            tablesText = "Times Tables: " + tables.join(", ");
+        }
+
+        document.getElementById('final-cert-name').innerText = name;
+        document.getElementById('cert-action-text').innerText = actionText;
+        
+        // Combine Tables info with Stats info
+        let finalDetails = tablesText;
+        if (detailText) finalDetails += `\n${detailText}`;
+        
+        document.getElementById('cert-details').innerText = finalDetails;
+        document.getElementById('cert-date').innerText = new Date().toLocaleDateString();
+        
+        document.getElementById('modal-overlay').classList.add('hidden');
+        document.getElementById('game-controls').classList.add('hidden');
+        document.getElementById('board').classList.add('hidden');
+        document.getElementById('certificate-view').classList.remove('hidden');
+        document.getElementById('cert-buttons-container').classList.remove('hidden');
+        document.getElementById('nugget-speech').innerText = "Congratulations!";
+    }
+
+    // --- Teacher Printing ---
+    function printCardSet() {
+        const selectedTables = getSelectedTables();
+        if(selectedTables.length === 0) { alert("Select at least one table."); return; }
+
+        const container = document.getElementById('print-layout');
+        container.innerHTML = '';
+        
+        const data = generateDeckData().sort(() => 0.5 - Math.random());
+        
+        // PAGE 1: All Fronts (24 cards)
+        const p1 = document.createElement('div'); p1.className = 'print-page';
+        data.forEach(cardData => {
+            const wrap = document.createElement('div'); wrap.className = 'print-card';
+            const face = document.createElement('div'); face.className = 'card-face card-front';
+            face.innerHTML = `<div class="card-content">${cardData.val}</div>`;
+            wrap.appendChild(face);
+            p1.appendChild(wrap);
+        });
+        
+        // PAGE 2: All Backs (24 cards)
+        const p2 = document.createElement('div'); p2.className = 'print-page';
+        data.forEach(cardData => {
+             const wrap = document.createElement('div'); wrap.className = 'print-card';
+             const face = document.createElement('div'); face.className = 'card-face card-back';
+             face.innerHTML = `<img src="Nugget.png">`;
+             wrap.appendChild(face);
+             p2.appendChild(wrap);
+        });
+        
+        container.appendChild(p1);
+        container.appendChild(p2);
+        
+        container.classList.add('visible-print');
+        window.print();
+        setTimeout(() => container.classList.remove('visible-print'), 1000);
+    }
+
+</script>
+</body>
+</html>
